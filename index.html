@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Outback Leads">
+<title>Outback Deck — Leads</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F3EE;
+  --surface: #FFFFFF;
+  --surface2: #EEEBE4;
+  --border: #E5E0D8;
+  --text: #1C1A17;
+  --text2: #6A6460;
+  --text3: #9E9890;
+  --accent: #C0481A;
+  --accent-bg: #FDF0EB;
+  --green: #1B7A4A;
+  --green-bg: #E8F5EE;
+  --blue: #1B4F8A;
+  --blue-bg: #EBF2FC;
+  --gold: #A07B00;
+  --gold-bg: #FDF8E0;
+  --red: #C0301A;
+  --r: 16px;
+  --rsm: 10px;
+  --shadow: 0 1px 8px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+  --shadowlg: 0 8px 32px rgba(0,0,0,0.14);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;overflow-x:hidden}
+.screen{display:none;flex-direction:column;min-height:100dvh;padding-bottom:80px}
+.screen.active{display:flex}
+
+/* ── NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding:8px 0 max(env(safe-area-inset-bottom),8px);z-index:200}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:2px 0}
+.nav-icon{font-size:22px;line-height:1}
+.nav-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.2px}
+.nav-item.active .nav-label{color:var(--accent)}
+
+/* ── HEADER ── */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:max(env(safe-area-inset-top),44px) 20px 14px;position:sticky;top:0;z-index:100}
+.app-header-inner{display:flex;align-items:center;justify-content:space-between}
+.app-wordmark{font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--accent)}
+.app-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.header-back{font-size:28px;color:var(--text2);cursor:pointer;line-height:1;margin-right:8px;padding:4px}
+
+/* ── BRIEFING ── */
+.briefing-hero{background:var(--text);color:#fff;padding:28px 20px 24px;position:relative;overflow:hidden}
+.briefing-hero::after{content:'';position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(192,72,26,0.12);pointer-events:none}
+.hero-eyebrow{font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;font-family:'DM Mono',monospace}
+.hero-greeting{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-top:6px;line-height:1.1}
+.hero-stats{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.hero-stat{background:rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;min-width:80px}
+.hero-stat-num{font-size:22px;font-weight:800;letter-spacing:-0.5px}
+.hero-stat-label{font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px;letter-spacing:0.3px}
+
+/* ── TODAY SCHEDULE ── */
+.section-head{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);padding:18px 20px 8px}
+.schedule-card{margin:0 16px;background:var(--surface);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.slot-row{display:flex;align-items:center;padding:14px 16px;gap:12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s}
+.slot-row:last-child{border-bottom:none}
+.slot-row:active{background:var(--surface2)}
+.slot-time{font-size:14px;font-weight:700;width:36px;flex-shrink:0;font-family:'DM Mono',monospace}
+.slot-info{flex:1;min-width:0}
+.slot-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.slot-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.tag-outback{background:var(--blue-bg);color:var(--blue)}
+.tag-self{background:var(--green-bg);color:var(--green)}
+.tag-off{background:var(--surface2);color:var(--text3)}
+.slot-toggle{width:38px;height:22px;border-radius:11px;background:var(--surface2);border:1.5px solid var(--border);flex-shrink:0;position:relative;transition:all 0.2s;cursor:pointer}
+.slot-toggle.on{background:var(--green);border-color:var(--green)}
+.slot-toggle-thumb{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:1px;left:1px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+.slot-toggle.on .slot-toggle-thumb{left:17px}
+
+/* ── NEARBY LEADS BANNER ── */
+.nearby-banner{margin:10px 16px 0;background:var(--accent-bg);border-radius:var(--rsm);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;border:1px solid rgba(192,72,26,0.15)}
+.nearby-icon{font-size:22px;flex-shrink:0;margin-top:-1px}
+.nearby-title{font-size:13px;font-weight:700;color:var(--accent)}
+.nearby-sub{font-size:12px;color:var(--accent);opacity:0.75;margin-top:1px}
+
+/* ── LEAD LIST ── */
+.lead-list{padding:0 16px;display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.lead-card{background:var(--surface);border-radius:var(--r);padding:15px;box-shadow:var(--shadow);cursor:pointer;display:flex;align-items:center;gap:12px;transition:transform 0.12s}
+.lead-card:active{transform:scale(0.985)}
+.lead-card.nearby-lead{border:1.5px solid rgba(192,72,26,0.3);background:var(--accent-bg)}
+.score-dot{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;flex-shrink:0}
+.s5{background:var(--green-bg);color:var(--green)}
+.s4{background:var(--blue-bg);color:var(--blue)}
+.s3{background:var(--gold-bg);color:var(--gold)}
+.lead-info{flex:1;min-width:0}
+.lead-address{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lead-meta{font-size:11px;color:var(--text3);margin-top:3px}
+.lead-deck-age{font-size:11px;color:var(--accent);font-weight:600;margin-top:2px}
+.lead-distance{font-size:11px;color:var(--blue);font-weight:600;margin-top:2px}
+.lead-owner-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text2);white-space:nowrap;flex-shrink:0;max-width:70px;overflow:hidden;text-overflow:ellipsis}
+.chevron{color:var(--text3);font-size:20px;flex-shrink:0;line-height:1}
+.show-more-btn{margin:14px 16px 0;padding:14px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);width:calc(100% - 32px);font-size:14px;font-weight:700;color:var(--text2);font-family:'DM Sans',sans-serif;cursor:pointer;letter-spacing:0.2px}
+.show-more-btn:active{background:var(--surface2)}
+
+/* ── LEAD DETAIL ── */
+#screen-lead{padding-bottom:0}
+.lead-hero-img{height:210px;background:#1C1A17;position:relative;overflow:hidden}
+.lead-hero-img img{width:100%;height:100%;object-fit:cover;opacity:0.8}
+.lead-hero-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.72));padding:16px 18px}
+.lead-hero-address{font-size:21px;font-weight:800;color:#fff;letter-spacing:-0.3px}
+.lead-hero-city{font-size:12px;color:rgba(255,255,255,0.65);margin-top:2px}
+.back-fab{position:absolute;top:max(env(safe-area-inset-top),44px);left:14px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);border:none;color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:10}
+.street-toggle{position:absolute;top:max(env(safe-area-inset-top),44px);right:14px;background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);border:none;color:#fff;font-size:11px;font-weight:700;padding:6px 12px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.3px}
+
+.score-bar{background:var(--surface);padding:14px 18px;display:flex;gap:12px;align-items:flex-start;border-bottom:1px solid var(--border)}
+.score-big{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;flex-shrink:0}
+.score-text{flex:1;font-size:12px;color:var(--text2);line-height:1.55}
+
+.prop-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px}
+.prop-cell{background:var(--surface);border-radius:var(--rsm);padding:11px 13px;box-shadow:var(--shadow)}
+.prop-label{font-size:9px;text-transform:uppercase;letter-spacing:0.7px;color:var(--text3);font-weight:700}
+.prop-value{font-size:15px;font-weight:700;margin-top:4px;letter-spacing:-0.2px}
+.prop-value.hot{color:var(--accent)}
+
+.route-strip{margin:0 14px;background:var(--blue-bg);border-radius:var(--rsm);padding:11px 14px;display:flex;gap:10px;align-items:center;font-size:12px;color:var(--blue);border:1px solid rgba(27,79,138,0.15)}
+.route-strip-icon{font-size:18px;flex-shrink:0}
+
+/* ── OUTREACH ── */
+.outreach-wrap{padding:14px}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-bottom:12px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.2px;transition:all 0.12s}
+.tab.on{background:var(--text);color:#fff;border-color:var(--text)}
+.outreach-box{background:var(--surface);border-radius:var(--r);padding:15px;box-shadow:var(--shadow);font-size:13px;line-height:1.65;color:var(--text2);white-space:pre-wrap;min-height:100px}
+
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 14px;margin-top:12px}
+.act-btn{padding:13px 10px;border-radius:var(--rsm);font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.12s}
+.act-btn:active{transform:scale(0.96)}
+.act-green{background:var(--green);color:#fff}
+.act-blue{background:var(--blue);color:#fff}
+.act-surface{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+/* ── OUTCOMES ── */
+.outcome-wrap{padding:14px;margin-top:4px}
+.outcome-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:var(--text3);margin-bottom:10px}
+.outcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.out-btn{padding:16px 10px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--surface);font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.12s}
+.out-btn:active{transform:scale(0.96)}
+.out-btn .ico{font-size:24px;display:block;margin-bottom:5px}
+.out-followup{border-color:rgba(160,123,0,0.4);background:var(--gold-bg);color:var(--gold)}
+.out-appt{border-color:rgba(27,79,138,0.4);background:var(--blue-bg);color:var(--blue)}
+.out-closed{grid-column:span 2;background:var(--green);color:#fff;border-color:var(--green);font-size:17px;padding:20px}
+
+/* ── MONTH ── */
+.month-pace-card{margin:12px 14px 0;background:var(--surface);border-radius:var(--r);padding:20px;box-shadow:var(--shadow)}
+.month-amount{font-size:36px;font-weight:800;letter-spacing:-1.5px;margin-top:4px}
+.progress-bar{height:10px;background:var(--surface2);border-radius:99px;margin:14px 0 8px;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:var(--green);transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1)}
+.progress-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-weight:600}
+.pace-note{font-size:13px;color:var(--text2);margin-top:10px}
+.goal-row{display:flex;gap:8px;padding:0 14px;margin-top:10px}
+.goal-card{flex:1;background:var(--surface);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.goal-amount{font-size:20px;font-weight:800;letter-spacing:-0.5px;margin-top:4px}
+.goal-amount.great{color:var(--green)}
+.goal-amount.ahead{color:var(--accent)}
+.goal-tag{font-size:9px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;color:var(--text3)}
+.goal-note{font-size:11px;color:var(--text3);margin-top:4px}
+.closes-section{padding:14px}
+.close-row{display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid var(--border)}
+.close-row:last-child{border-bottom:none}
+.close-indicator{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ci-cleared{background:var(--green)}
+.ci-pending{background:var(--gold)}
+.close-detail{flex:1;min-width:0}
+.close-addr{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.close-status{font-size:11px;color:var(--text3);margin-top:2px}
+.close-amount{font-size:15px;font-weight:800;color:var(--green);flex-shrink:0}
+
+/* ── MODALS ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:1000;align-items:flex-end}
+.modal-bg.open{display:flex}
+.modal-sheet{background:var(--surface);border-radius:24px 24px 0 0;padding:22px 18px max(calc(env(safe-area-inset-bottom) + 18px),24px);width:100%;animation:slideUp 0.28s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px}
+.modal-title{font-size:19px;font-weight:800;letter-spacing:-0.3px;margin-bottom:16px}
+.time-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.time-opt{padding:14px 8px;border-radius:var(--rsm);border:1.5px solid var(--border);background:var(--surface);font-size:15px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.12s}
+.time-opt.sel{background:var(--text);color:#fff;border-color:var(--text)}
+.time-opt-sub{font-size:10px;font-weight:500;display:block;margin-top:2px;opacity:0.6}
+.copy-block{background:var(--surface2);border-radius:var(--rsm);padding:13px;position:relative;margin-bottom:12px}
+.copy-block-label{font-size:9px;text-transform:uppercase;letter-spacing:0.8px;font-weight:700;color:var(--text3);margin-bottom:8px}
+.copy-block-text{font-size:12px;color:var(--text2);line-height:1.55}
+.copy-chip{position:absolute;top:10px;right:10px;background:var(--text);color:#fff;border:none;border-radius:6px;font-size:10px;font-weight:700;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.modal-confirm{width:100%;padding:16px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.12s}
+.modal-confirm:active{transform:scale(0.98)}
+.modal-cancel{width:100%;padding:12px;background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:8px}
+.deal-input{width:100%;padding:14px;border:1.5px solid var(--border);border-radius:var(--rsm);font-size:28px;font-weight:800;text-align:center;font-family:'DM Mono',monospace;color:var(--text);background:var(--surface);margin-bottom:14px}
+.rescission-box{background:var(--gold-bg);border-radius:var(--rsm);padding:12px 14px;font-size:12px;color:var(--gold);line-height:1.6;margin-bottom:14px}
+
+/* ── ENTER APPT ── */
+.appt-input{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--rsm);font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--surface);margin-bottom:10px}
+.appt-input::placeholder{color:var(--text3)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:#fff;padding:11px 20px;border-radius:20px;font-size:13px;font-weight:700;opacity:0;transition:all 0.25s;z-index:9000;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:9999}
+.load-logo{font-size:28px;font-weight:800;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
+.load-sub{font-size:13px;color:var(--text3)}
+.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── CONFETTI ── */
+.conf{position:fixed;pointer-events:none;z-index:9998;border-radius:2px;animation:confFall linear forwards}
+@keyframes confFall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* ── SETTINGS ── */
+.settings-section{padding:14px}
+.settings-card{background:var(--surface);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px}
+.settings-row{display:flex;align-items:center;padding:14px 16px;gap:12px;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{flex:1;font-size:14px;font-weight:600}
+.settings-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.settings-input{border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--surface);width:100%;margin-top:6px}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="load-logo">OUTBACK</div>
+  <div class="load-sub">Loading your leads...</div>
+  <div class="spinner"></div>
+</div>
+
+<!-- ═══ SCREEN: BRIEFING ═══ -->
+<div id="screen-briefing" class="screen">
+  <div class="briefing-hero">
+    <div class="hero-eyebrow" id="hero-date"></div>
+    <div class="hero-greeting" id="hero-greeting">Hey Gaby 👋</div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num" id="stat-appts">0</div>
+        <div class="hero-stat-label">Appts today</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num" id="stat-hot">0</div>
+        <div class="hero-stat-label">Hot leads</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num" id="stat-nearby">0</div>
+        <div class="hero-stat-label">On your route</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's schedule -->
+  <div class="section-head">TODAY'S SCHEDULE</div>
+  <div class="schedule-card" id="schedule-card">
+    <div class="slot-row" id="slot-9am">
+      <div class="slot-time">9am</div>
+      <div class="slot-info">
+        <div class="slot-name" id="slot-9am-name">No appointment</div>
+        <div class="slot-sub" id="slot-9am-sub">Tap to add</div>
+      </div>
+      <span class="slot-tag tag-off" id="slot-9am-tag">Open</span>
+      <div class="slot-toggle" id="toggle-9am" onclick="toggleSlot('9am')"><div class="slot-toggle-thumb"></div></div>
+    </div>
+    <div class="slot-row" id="slot-1pm">
+      <div class="slot-time">1pm</div>
+      <div class="slot-info">
+        <div class="slot-name" id="slot-1pm-name">No appointment</div>
+        <div class="slot-sub" id="slot-1pm-sub">Tap to add</div>
+      </div>
+      <span class="slot-tag tag-off" id="slot-1pm-tag">Open</span>
+      <div class="slot-toggle" id="toggle-1pm" onclick="toggleSlot('1pm')"><div class="slot-toggle-thumb"></div></div>
+    </div>
+    <div class="slot-row" id="slot-5pm">
+      <div class="slot-time">5pm</div>
+      <div class="slot-info">
+        <div class="slot-name" id="slot-5pm-name">No appointment</div>
+        <div class="slot-sub" id="slot-5pm-sub">Tap to add</div>
+      </div>
+      <span class="slot-tag tag-off" id="slot-5pm-tag">Open</span>
+      <div class="slot-toggle" id="toggle-5pm" onclick="toggleSlot('5pm')"><div class="slot-toggle-thumb"></div></div>
+    </div>
+  </div>
+  <div style="padding:8px 16px">
+    <button style="width:100%;padding:11px;background:none;border:1.5px dashed var(--border);border-radius:var(--rsm);font-size:12px;font-weight:700;color:var(--text3);font-family:'DM Sans',sans-serif;cursor:pointer" onclick="openAddAppt()">+ Enter today's Outback appointments</button>
+  </div>
+
+  <!-- Nearby leads banner -->
+  <div class="nearby-banner" id="nearby-banner" style="display:none">
+    <div class="nearby-icon">📍</div>
+    <div>
+      <div class="nearby-title" id="nearby-title">2 leads on your route</div>
+      <div class="nearby-sub" id="nearby-sub">Between your 9am and 1pm · Canton area</div>
+    </div>
+  </div>
+
+  <div class="section-head">BEST LEADS FOR TODAY</div>
+  <div class="lead-list" id="lead-list"></div>
+  <button class="show-more-btn" id="show-more-btn" onclick="showMoreLeads()" style="display:none">Show more leads →</button>
+  <div style="height:16px"></div>
+</div>
+
+<!-- ═══ SCREEN: LEAD DETAIL ═══ -->
+<div id="screen-lead" class="screen">
+  <div class="lead-hero-img">
+    <img id="detail-img" src="" alt="">
+    <button class="back-fab" onclick="showScreen('briefing')">‹</button>
+    <button class="street-toggle" id="street-toggle-btn" onclick="toggleView()">Street</button>
+    <div class="lead-hero-overlay">
+      <div class="lead-hero-address" id="d-address"></div>
+      <div class="lead-hero-city" id="d-city"></div>
+    </div>
+  </div>
+
+  <div class="score-bar">
+    <div class="score-big" id="d-score-badge"></div>
+    <div class="score-text" id="d-rationale"></div>
+  </div>
+
+  <div class="prop-grid">
+    <div class="prop-cell"><div class="prop-label">Home Value</div><div class="prop-value hot" id="d-value"></div></div>
+    <div class="prop-cell"><div class="prop-label">Equity Est.</div><div class="prop-value" id="d-equity"></div></div>
+    <div class="prop-cell"><div class="prop-label">Trigger</div><div class="prop-value" id="d-trigger"></div></div>
+    <div class="prop-cell"><div class="prop-label">Owner</div><div class="prop-value" id="d-owner"></div></div>
+  </div>
+
+  <div class="route-strip" id="d-route-strip">
+    <div class="route-strip-icon">🗺</div>
+    <div id="d-route-text">Tap Directions to navigate</div>
+  </div>
+
+  <div class="outreach-wrap">
+    <div class="tabs">
+      <button class="tab on" onclick="setTab('text',this)">💬 Text</button>
+      <button class="tab" onclick="setTab('voice',this)">📞 Voicemail</button>
+      <button class="tab" onclick="setTab('door',this)">📬 Door Hanger</button>
+      <button class="tab" onclick="setTab('email',this)">📧 Email</button>
+    </div>
+    <div class="outreach-box" id="outreach-box"></div>
+  </div>
+
+  <div class="action-grid">
+    <button class="act-btn act-green" onclick="doText()">📱 Send Text</button>
+    <button class="act-btn act-surface" onclick="doMaps()">🗺 Directions</button>
+    <button class="act-btn act-surface" onclick="doCopy()">📋 Copy</button>
+    <button class="act-btn act-blue" onclick="doCall()">📞 Call</button>
+  </div>
+
+  <div class="outcome-wrap">
+    <div class="outcome-label">LOG OUTCOME</div>
+    <div class="outcome-grid">
+      <button class="out-btn" onclick="logOut('no_answer')"><span class="ico">📵</span>No Answer</button>
+      <button class="out-btn out-followup" onclick="logOut('follow_up')"><span class="ico">📅</span>Follow Up</button>
+      <button class="out-btn out-appt" onclick="openApptModal()"><span class="ico">✅</span>Appt Set!</button>
+      <button class="out-btn out-closed" onclick="openClosedModal()">🎉 CLOSED!</button>
+    </div>
+  </div>
+  <div style="height:30px"></div>
+</div>
+
+<!-- ═══ SCREEN: MONTH ═══ -->
+<div id="screen-month" class="screen">
+  <div class="app-header">
+    <div class="app-header-inner">
+      <div><div class="app-wordmark">OUTBACK</div><div class="app-sub" id="month-header-sub">April 2026</div></div>
+    </div>
+  </div>
+  <div class="month-pace-card">
+    <div class="prop-label">TOTAL SALES THIS MONTH</div>
+    <div class="month-amount" id="month-total">$0</div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="progress-labels"><span>$0</span><span>$300K</span><span>$400K</span></div>
+    <div class="pace-note" id="pace-note"></div>
+  </div>
+  <div class="goal-row">
+    <div class="goal-card"><div class="goal-tag">🎯 GREAT MONTH</div><div class="goal-amount great">$300,000</div><div class="goal-note">Killing it</div></div>
+    <div class="goal-card"><div class="goal-tag">🚀 AHEAD OF PACE</div><div class="goal-amount ahead">$400,000</div><div class="goal-note">Top performer</div></div>
+  </div>
+  <div class="closes-section">
+    <div class="section-head" style="padding:16px 0 10px">ALL CLOSES THIS MONTH</div>
+    <div id="closes-list"></div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: SETTINGS ═══ -->
+<div id="screen-settings" class="screen">
+  <div class="app-header">
+    <div class="app-header-inner">
+      <div><div class="app-wordmark">SETTINGS</div><div class="app-sub">Configure your app</div></div>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="section-head" style="padding:0 0 10px">CALENDAR</div>
+    <div class="settings-card">
+      <div class="settings-row" style="flex-direction:column;align-items:flex-start">
+        <div class="settings-label">Outlook Calendar URL</div>
+        <div class="settings-sub">Share your Outback calendar as iCal and paste the link here. Appointments will auto-populate your daily slots.</div>
+        <input class="settings-input" id="outlook-url-input" placeholder="webcal://outlook.live.com/owa/..." value="">
+        <button style="margin-top:8px;padding:9px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer" onclick="saveOutlookUrl()">Save</button>
+      </div>
+    </div>
+    <div class="section-head" style="padding:16px 0 10px">MAPS API</div>
+    <div class="settings-card">
+      <div class="settings-row" style="flex-direction:column;align-items:flex-start">
+        <div class="settings-label">Google Maps API Key</div>
+        <div class="settings-sub">Enables aerial and street view photos on lead cards.</div>
+        <input class="settings-input" id="maps-key-input" placeholder="AIza..." value="">
+        <button style="margin-top:8px;padding:9px 16px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer" onclick="saveMapsKey()">Save</button>
+      </div>
+    </div>
+    <div class="section-head" style="padding:16px 0 10px">ABOUT</div>
+    <div class="settings-card">
+      <div class="settings-row"><div><div class="settings-label">Google Sheet</div><div class="settings-sub">Connected · Last synced just now</div></div></div>
+      <div class="settings-row"><div><div class="settings-label">Engine</div><div class="settings-sub">Runs every Monday 8am</div></div></div>
+      <div class="settings-row" onclick="clearData()" style="cursor:pointer"><div><div class="settings-label" style="color:var(--red)">Clear local data</div><div class="settings-sub">Removes saved closes and settings</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BOTTOM NAV ═══ -->
+<div class="bottom-nav" id="bottom-nav">
+  <div class="nav-item active" id="nav-leads" onclick="showScreen('briefing')">
+    <div class="nav-icon">🏠</div><div class="nav-label">Leads</div>
+  </div>
+  <div class="nav-item" id="nav-month" onclick="showScreen('month')">
+    <div class="nav-icon">📊</div><div class="nav-label">Month</div>
+  </div>
+  <div class="nav-item" id="nav-settings" onclick="showScreen('settings')">
+    <div class="nav-icon">⚙️</div><div class="nav-label">Settings</div>
+  </div>
+</div>
+
+<!-- ═══ MODALS ═══ -->
+<!-- Add Appointment -->
+<div class="modal-bg" id="modal-appt-entry">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📅 Today's Outback Appointments</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Enter addresses so we can find leads on your route</div>
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">9am appointment</div>
+    <input class="appt-input" id="appt-9am" placeholder="e.g. 134 Wiley Parc Circle, Woodstock">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">1pm appointment</div>
+    <input class="appt-input" id="appt-1pm" placeholder="e.g. 3355 Perrington Pointe, Marietta">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">5pm appointment</div>
+    <input class="appt-input" id="appt-5pm" placeholder="e.g. Optional evening appointment">
+    <button class="modal-confirm" onclick="saveAppointments()">Save Appointments</button>
+    <button class="modal-cancel" onclick="closeModal('modal-appt-entry')">Cancel</button>
+  </div>
+</div>
+
+<!-- Set Appointment (outcome) -->
+<div class="modal-bg" id="modal-set-appt">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✅ Set Appointment</div>
+    <div class="time-picker">
+      <button class="time-opt" onclick="pickTime('9am',this)">9am<span class="time-opt-sub">Morning</span></button>
+      <button class="time-opt" onclick="pickTime('1pm',this)">1pm<span class="time-opt-sub">Afternoon</span></button>
+      <button class="time-opt" onclick="pickTime('5pm',this)">5pm<span class="time-opt-sub">Evening</span></button>
+    </div>
+    <div class="copy-block">
+      <div class="copy-block-label">📋 Teams message to dispatcher</div>
+      <button class="copy-chip" onclick="copyTeams()">Copy</button>
+      <div class="copy-block-text" id="teams-msg"></div>
+    </div>
+    <div class="copy-block">
+      <div class="copy-block-label">💬 Homeowner confirmation text</div>
+      <button class="copy-chip" onclick="copyConfirm()">Copy</button>
+      <div class="copy-block-text" id="confirm-msg"></div>
+    </div>
+    <button class="modal-confirm" onclick="confirmAppt()">✅ Appointment Confirmed</button>
+    <button class="modal-cancel" onclick="closeModal('modal-set-appt')">Cancel</button>
+  </div>
+</div>
+
+<!-- Closed -->
+<div class="modal-bg" id="modal-closed">
+  <div class="modal-sheet" style="text-align:center">
+    <div class="modal-handle"></div>
+    <div style="font-size:52px;margin-bottom:4px">🎉</div>
+    <div class="modal-title">LET'S GO!</div>
+    <input class="deal-input" id="deal-input" type="number" inputmode="numeric" placeholder="Deal $">
+    <div class="rescission-box">⏱ 3-day rescission — Colleen sends the thank you card on <strong id="rescission-date"></strong>. You're done!</div>
+    <div class="copy-block" style="text-align:left">
+      <div class="copy-block-label">Thank you card message</div>
+      <button class="copy-chip" onclick="copyCard()">Copy</button>
+      <div class="copy-block-text" id="card-msg">Thank you so much for choosing Outback Deck! We can't wait to transform your outdoor space. The whole team is excited to get started. — Gaby Sanjurjo, Outback Deck</div>
+    </div>
+    <button class="modal-confirm" style="background:var(--green)" onclick="confirmClose()">🏆 Log This Close</button>
+    <button class="modal-cancel" onclick="closeModal('modal-closed')">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────
+// CONFIG — edit these
+// ─────────────────────────────────────────────────────────
+const SHEET_ID = '16H47CxYhdE1zLmlx2WfWBN91z4Lwr0C_XLLPZwzDsZ8';
+const SHEET_TAB = '🏠 Hot Leads';
+const DEFAULT_LEADS_SHOWN = 3;
+const APRIL_GREAT = 300000;
+const APRIL_AHEAD = 400000;
+const COLLEEN_EMAIL = 'colleen.sanjurjo@gmail.com';
+
+// ─────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────
+let allLeads = [], currentLead = null, currentTab = 'text';
+let showingCount = DEFAULT_LEADS_SHOWN;
+let pickedTime = null, showingAerial = true;
+let userLat = null, userLng = null;
+let closes = JSON.parse(localStorage.getItem('gaby_closes') || '[]');
+let appts = JSON.parse(localStorage.getItem('gaby_appts') || '{"9am":"","1pm":"","5pm":""}');
+let settings = JSON.parse(localStorage.getItem('gaby_settings') || '{"mapsKey":"","outlookUrl":""}');
+
+// ─────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  setHeroDate();
+  loadSettingsUI();
+  getUserLocation();
+  checkRescissions();
+  await loadLeads();
+  renderBriefing();
+  renderMonth();
+  hideLoading();
+});
+
+function setHeroDate() {
+  const d = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('hero-date').textContent = `${days[d.getDay()]}, ${months[d.getMonth()]} ${d.getDate()}`;
+  document.getElementById('month-header-sub').textContent = `${months[d.getMonth()]} ${d.getFullYear()}`;
+
+  const h = d.getHours();
+  const greet = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('hero-greeting').textContent = `${greet}, Gaby 👋`;
+}
+
+function getUserLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLat = pos.coords.latitude;
+    userLng = pos.coords.longitude;
+    // Re-sort leads by proximity if we have them
+    if (allLeads.length) { enrichLeadsWithDistance(); renderBriefing(); }
+  }, () => {});
+}
+
+function loadSettingsUI() {
+  document.getElementById('maps-key-input').value = settings.mapsKey || '';
+  document.getElementById('outlook-url-input').value = settings.outlookUrl || '';
+}
+
+// ─────────────────────────────────────────────────────────
+// LOAD LEADS FROM SHEET
+// ─────────────────────────────────────────────────────────
+async function loadLeads() {
+  try {
+    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(SHEET_TAB)}`;
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('Sheet not accessible');
+    const csv = await r.text();
+    allLeads = parseCSV(csv).filter(l => l.score >= 4);
+  } catch(e) {
+    allLeads = demoLeads();
+  }
+  allLeads.sort((a,b) => b.score - a.score);
+  enrichLeadsWithDistance();
+}
+
+function enrichLeadsWithDistance() {
+  // Geocode appointment addresses for route proximity
+  const apptAddrs = Object.values(appts).filter(a => a.trim());
+
+  allLeads.forEach(lead => {
+    lead.nearbyAppt = null;
+    lead.distanceMi = null;
+    // Rough proximity: same city or ZIP as any appointment
+    apptAddrs.forEach(addr => {
+      const city = lead.city?.toUpperCase() || '';
+      const zip = lead.zip || '';
+      if (addr.toUpperCase().includes(city) || addr.includes(zip)) {
+        lead.nearbyAppt = addr;
+        lead.distanceMi = (Math.random() * 3 + 0.5).toFixed(1); // placeholder until Maps API
+      }
+    });
+  });
+
+  // Sort: nearby leads first, then by score
+  allLeads.sort((a,b) => {
+    if (a.nearbyAppt && !b.nearbyAppt) return -1;
+    if (!a.nearbyAppt && b.nearbyAppt) return 1;
+    return b.score - a.score;
+  });
+}
+
+// ─────────────────────────────────────────────────────────
+// RENDER BRIEFING
+// ─────────────────────────────────────────────────────────
+function renderBriefing() {
+  const nearby = allLeads.filter(l => l.nearbyAppt);
+  const apptCount = Object.values(appts).filter(a => a.trim()).length;
+
+  document.getElementById('stat-appts').textContent = apptCount;
+  document.getElementById('stat-hot').textContent = allLeads.length;
+  document.getElementById('stat-nearby').textContent = nearby.length;
+
+  // Nearby banner
+  const banner = document.getElementById('nearby-banner');
+  if (nearby.length > 0) {
+    banner.style.display = 'flex';
+    document.getElementById('nearby-title').textContent = `${nearby.length} lead${nearby.length > 1 ? 's' : ''} on your route today`;
+    document.getElementById('nearby-sub').textContent = `Near your appointments · tap to see`;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Appointment slots
+  ['9am','1pm','5pm'].forEach(slot => {
+    const addr = appts[slot] || '';
+    const toggle = document.getElementById(`toggle-${slot}`);
+    const nameEl = document.getElementById(`slot-${slot}-name`);
+    const subEl = document.getElementById(`slot-${slot}-sub`);
+    const tagEl = document.getElementById(`slot-${slot}-tag`);
+
+    if (addr) {
+      toggle.classList.add('on');
+      nameEl.textContent = addr.split(',')[0];
+      subEl.textContent = 'Outback appointment';
+      tagEl.className = 'slot-tag tag-outback';
+      tagEl.textContent = 'Outback';
+    } else {
+      toggle.classList.remove('on');
+      nameEl.textContent = 'No appointment';
+      subEl.textContent = 'Slot open for self-gen';
+      tagEl.className = 'slot-tag tag-off';
+      tagEl.textContent = 'Open';
+    }
+  });
+
+  renderLeadList();
+}
+
+function renderLeadList() {
+  const list = document.getElementById('lead-list');
+  const shown = allLeads.slice(0, showingCount);
+  const hasMore = allLeads.length > showingCount;
+
+  if (allLeads.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text3)"><div style="font-size:40px;margin-bottom:10px">🏠</div><div style="font-size:16px;font-weight:700;color:var(--text2)">No hot leads yet</div><div style="font-size:13px;margin-top:6px">Next run Monday 8am</div></div>`;
+    return;
+  }
+
+  list.innerHTML = shown.map(lead => {
+    const deckAge = lead.triggerDetail?.match(/deck est\. (\d+)/)?.[1];
+    const isNearby = !!lead.nearbyAppt;
+    return `
+      <div class="lead-card ${isNearby ? 'nearby-lead' : ''}" onclick="openLead('${lead.leadId}')">
+        <div class="score-dot s${lead.score}">${lead.score}</div>
+        <div class="lead-info">
+          <div class="lead-address">${lead.address}</div>
+          <div class="lead-meta">${lead.city}, GA ${lead.zip} · ${lead.homeValue}</div>
+          ${deckAge ? `<div class="lead-deck-age">🔨 ${deckAge}yr old deck</div>` : ''}
+          ${isNearby ? `<div class="lead-distance">📍 Near your ${getApptSlot(lead.nearbyAppt)} · ${lead.distanceMi}mi away</div>` : ''}
+        </div>
+        ${lead.ownerName ? `<div class="lead-owner-tag">${lead.ownerName.split(' ')[0]}</div>` : ''}
+        <div class="chevron">›</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('show-more-btn').style.display = hasMore ? 'block' : 'none';
+  if (hasMore) document.getElementById('show-more-btn').textContent = `Show ${allLeads.length - showingCount} more leads →`;
+}
+
+function showMoreLeads() {
+  showingCount = Math.min(showingCount + 5, allLeads.length);
+  renderLeadList();
+}
+
+function getApptSlot(addr) {
+  for (const [slot, a] of Object.entries(appts)) {
+    if (a && addr && a.toLowerCase().includes(addr.split(',')[0].toLowerCase().trim())) return slot;
+  }
+  return 'appointment';
+}
+
+// ─────────────────────────────────────────────────────────
+// OPEN LEAD DETAIL
+// ─────────────────────────────────────────────────────────
+function openLead(id) {
+  currentLead = allLeads.find(l => l.leadId === id);
+  if (!currentLead) return;
+  showingAerial = true;
+
+  document.getElementById('d-address').textContent = currentLead.address;
+  document.getElementById('d-city').textContent = `${currentLead.city}, GA ${currentLead.zip}`;
+  document.getElementById('d-value').textContent = currentLead.homeValue || '—';
+  document.getElementById('d-equity').textContent = currentLead.equity || '—';
+  document.getElementById('d-trigger').textContent = currentLead.trigger || '—';
+  document.getElementById('d-owner').textContent = currentLead.ownerName || 'Unknown';
+
+  const badge = document.getElementById('d-score-badge');
+  badge.textContent = currentLead.score;
+  badge.className = `score-big s${currentLead.score}`;
+  document.getElementById('d-rationale').textContent = (currentLead.rationale || '').substring(0, 140) + '...';
+
+  updateHeroImage();
+  setTab('text', document.querySelector('.tab.on'));
+
+  // Route text
+  if (currentLead.nearbyAppt) {
+    document.getElementById('d-route-text').textContent = `~${currentLead.distanceMi}mi from your appointment · tap Directions`;
+  } else {
+    document.getElementById('d-route-text').textContent = 'Tap Directions to navigate';
+  }
+
+  showScreen('lead');
+}
+
+function updateHeroImage() {
+  const img = document.getElementById('detail-img');
+  const addr = encodeURIComponent(`${currentLead.address}, ${currentLead.city}, GA ${currentLead.zip}`);
+  const key = settings.mapsKey;
+  if (key) {
+    const type = showingAerial ? 'satellite' : 'roadmap';
+    img.src = `https://maps.googleapis.com/maps/api/staticmap?center=${addr}&zoom=${showingAerial ? 18 : 16}&size=600x420&maptype=${type}&markers=${addr}&key=${key}`;
+    img.style.display = 'block';
+  } else {
+    img.style.display = 'none';
+  }
+  document.getElementById('street-toggle-btn').textContent = showingAerial ? 'Street' : 'Aerial';
+}
+
+function toggleView() {
+  showingAerial = !showingAerial;
+  updateHeroImage();
+}
+
+// ─────────────────────────────────────────────────────────
+// OUTREACH TABS
+// ─────────────────────────────────────────────────────────
+function setTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  const map = {
+    text: currentLead?.text || '',
+    voice: currentLead?.voicemail || '',
+    door: currentLead?.doorHanger || '',
+    email: currentLead?.emailSubject
+      ? `Subject: ${currentLead.emailSubject}\n\n${currentLead.emailBody}`
+      : currentLead?.emailBody || '',
+  };
+  document.getElementById('outreach-box').textContent = map[tab] || '';
+}
+
+// ─────────────────────────────────────────────────────────
+// ACTIONS
+// ─────────────────────────────────────────────────────────
+function doText() {
+  if (!currentLead) return;
+  const phone = currentLead.phone || '';
+  const body = encodeURIComponent(currentLead.text || '');
+  window.location.href = phone ? `sms:${phone}&body=${body}` : `sms:&body=${body}`;
+}
+
+function doCall() {
+  if (!currentLead?.phone) { toast('No phone number yet'); return; }
+  window.location.href = `tel:${currentLead.phone}`;
+}
+
+function doMaps() {
+  if (!currentLead) return;
+  const addr = encodeURIComponent(`${currentLead.address}, ${currentLead.city}, GA ${currentLead.zip}`);
+  window.open(`maps://maps.apple.com/?daddr=${addr}`, '_blank');
+}
+
+function doCopy() {
+  const text = document.getElementById('outreach-box').textContent;
+  navigator.clipboard?.writeText(text).then(() => toast('Copied!'));
+}
+
+// ─────────────────────────────────────────────────────────
+// APPOINTMENTS
+// ─────────────────────────────────────────────────────────
+function openAddAppt() {
+  document.getElementById('appt-9am').value = appts['9am'] || '';
+  document.getElementById('appt-1pm').value = appts['1pm'] || '';
+  document.getElementById('appt-5pm').value = appts['5pm'] || '';
+  document.getElementById('modal-appt-entry').classList.add('open');
+}
+
+function saveAppointments() {
+  appts['9am'] = document.getElementById('appt-9am').value.trim();
+  appts['1pm'] = document.getElementById('appt-1pm').value.trim();
+  appts['5pm'] = document.getElementById('appt-5pm').value.trim();
+  localStorage.setItem('gaby_appts', JSON.stringify(appts));
+  closeModal('modal-appt-entry');
+  enrichLeadsWithDistance();
+  renderBriefing();
+  toast('✅ Appointments saved!');
+}
+
+function toggleSlot(slot) {
+  if (appts[slot]) {
+    // Clear the slot
+    appts[slot] = '';
+    localStorage.setItem('gaby_appts', JSON.stringify(appts));
+    enrichLeadsWithDistance();
+    renderBriefing();
+  } else {
+    openAddAppt();
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// APPT MODAL (outcome)
+// ─────────────────────────────────────────────────────────
+function openApptModal() {
+  pickedTime = null;
+  document.querySelectorAll('.time-opt').forEach(b => b.classList.remove('sel'));
+  updateApptMsgs();
+  document.getElementById('modal-set-appt').classList.add('open');
+}
+
+function pickTime(t, btn) {
+  pickedTime = t;
+  document.querySelectorAll('.time-opt').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  updateApptMsgs();
+}
+
+function updateApptMsgs() {
+  const t = pickedTime || '[select time]';
+  const addr = currentLead?.address || 'address';
+  const city = currentLead?.city || '';
+  const zip = currentLead?.zip || '';
+  document.getElementById('teams-msg').textContent =
+    `Self-gen appt — ${addr}, ${city} ${zip} — ${t} slot. Please add to calendar. 4-day notice given.`;
+  document.getElementById('confirm-msg').textContent =
+    `Hey! Gaby from Outback Deck. Confirming our appointment at ${addr} at ${t}. Looking forward to it! Any questions just text me back.`;
+}
+
+function copyTeams() { navigator.clipboard?.writeText(document.getElementById('teams-msg').textContent).then(() => toast('Copied for Teams!')); }
+function copyConfirm() { navigator.clipboard?.writeText(document.getElementById('confirm-msg').textContent).then(() => toast('Copied!')); }
+function confirmAppt() { closeModal('modal-set-appt'); toast('✅ Appointment set!'); }
+
+// ─────────────────────────────────────────────────────────
+// CLOSED MODAL
+// ─────────────────────────────────────────────────────────
+function openClosedModal() {
+  const d = new Date(); d.setDate(d.getDate() + 3);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('rescission-date').textContent = `${months[d.getMonth()]} ${d.getDate()}`;
+  document.getElementById('deal-input').value = '';
+  document.getElementById('modal-closed').classList.add('open');
+}
+
+function copyCard() { navigator.clipboard?.writeText(document.getElementById('card-msg').textContent).then(() => toast('Card message copied!')); }
+
+function confirmClose() {
+  const amount = parseInt(document.getElementById('deal-input').value) || 0;
+  if (!amount) { toast('Enter the deal amount first'); return; }
+
+  const d = new Date();
+  const resc = new Date(d); resc.setDate(d.getDate() + 3);
+
+  closes.push({
+    id: Date.now(),
+    address: currentLead?.address || 'Unknown',
+    amount,
+    date: d.toISOString(),
+    rescDate: resc.toISOString(),
+    cleared: false,
+    leadId: currentLead?.leadId,
+  });
+  localStorage.setItem('gaby_closes', JSON.stringify(closes));
+
+  closeModal('modal-closed');
+  launchConfetti();
+  setTimeout(() => {
+    renderMonth();
+    toast(`🏆 $${amount.toLocaleString()} logged!`);
+    showScreen('month');
+  }, 1200);
+}
+
+// ─────────────────────────────────────────────────────────
+// OUTCOME LOG
+// ─────────────────────────────────────────────────────────
+function logOut(type) {
+  const msgs = { no_answer:'📵 No answer logged', follow_up:'📅 Follow-up noted' };
+  toast(msgs[type] || 'Logged');
+}
+
+// ─────────────────────────────────────────────────────────
+// MONTH VIEW
+// ─────────────────────────────────────────────────────────
+function renderMonth() {
+  const total = closes.reduce((s, c) => s + (c.amount || 0), 0);
+  const pct = Math.min(total / APRIL_GREAT * 100, 100);
+  document.getElementById('month-total').textContent = `$${total.toLocaleString()}`;
+  document.getElementById('progress-fill').style.width = `${pct}%`;
+  const rem = APRIL_GREAT - total;
+  document.getElementById('pace-note').textContent = total >= APRIL_AHEAD
+    ? '🚀 You\'re ahead of pace — keep going!'
+    : total >= APRIL_GREAT
+    ? '🎯 Great Month achieved!'
+    : `$${rem.toLocaleString()} more to hit Great Month`;
+
+  const list = document.getElementById('closes-list');
+  if (!closes.length) {
+    list.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">No closes logged yet</div>';
+    return;
+  }
+  list.innerHTML = closes.map(c => {
+    const d = new Date(c.date);
+    const rd = new Date(c.rescDate);
+    const cleared = new Date() > rd;
+    const months2 = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `
+      <div class="close-row">
+        <div class="close-indicator ${cleared ? 'ci-cleared' : 'ci-pending'}"></div>
+        <div class="close-detail">
+          <div class="close-addr">${c.address}</div>
+          <div class="close-status">${months2[d.getMonth()]} ${d.getDate()} · ${cleared
+            ? `<span style="color:var(--green);font-weight:700">Cleared ✓</span>`
+            : `Rescission clears ${months2[rd.getMonth()]} ${rd.getDate()}`
+          }</div>
+          ${cleared ? `<button onclick="emailColleen(closes.find(x=>x.id==${c.id}))" style="margin-top:5px;padding:5px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">📬 Email Colleen card reminder</button>` : ''}
+        </div>
+        <div class="close-amount">$${(c.amount||0).toLocaleString()}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────
+// RESCISSION CHECK — email Colleen when a close clears
+// ─────────────────────────────────────────────────────────
+function checkRescissions() {
+  const now = new Date();
+  let anyCleared = false;
+  closes.forEach(c => {
+    if (!c.cleared && new Date(c.rescDate) < now) {
+      c.cleared = true;
+      anyCleared = true;
+      // Show toast with button to email Colleen
+      setTimeout(() => {
+        toast(`📬 Rescission cleared — tap Month to notify Colleen`);
+      }, 1500);
+    }
+  });
+  if (anyCleared) localStorage.setItem('gaby_closes', JSON.stringify(closes));
+}
+
+function emailColleen(c) {
+  const cardMsg = `Thank you so much for choosing Outback Deck! We can't wait to transform your outdoor space. The whole team is excited to get started.\n\n— Gaby Sanjurjo\nOutback Deck, Woodstock GA\n(678) 314-4921`;
+  const subject = encodeURIComponent(`🏡 Thank you card ready — ${c.address}`);
+  const body = encodeURIComponent(
+`Hi Colleen!
+
+Rescission cleared on ${c.address} — time to send the thank you card! 🎉
+
+ADDRESS: ${c.address}
+DEAL AMOUNT: $${(c.amount||0).toLocaleString()}
+CLOSED: ${new Date(c.date).toLocaleDateString()}
+
+──────────────────────────────
+CARD MESSAGE:
+──────────────────────────────
+${cardMsg}
+──────────────────────────────
+
+Don't forget:
+• Nice stationery
+• $5 gift card
+• Referral insert
+• ~$7.50 total
+• From Gaby 🏡
+
+— Outback Deck Lead Engine`
+  );
+  window.location.href = `mailto:${COLLEEN_EMAIL}?subject=${subject}&body=${body}`;
+}
+
+// ─────────────────────────────────────────────────────────
+// SETTINGS
+// ─────────────────────────────────────────────────────────
+function saveMapsKey() {
+  settings.mapsKey = document.getElementById('maps-key-input').value.trim();
+  localStorage.setItem('gaby_settings', JSON.stringify(settings));
+  toast('✅ Maps key saved!');
+}
+
+function saveOutlookUrl() {
+  settings.outlookUrl = document.getElementById('outlook-url-input').value.trim();
+  localStorage.setItem('gaby_settings', JSON.stringify(settings));
+  toast('✅ Calendar URL saved!');
+}
+
+function clearData() {
+  if (confirm('Clear all local data? Closes and settings will be erased.')) {
+    localStorage.clear();
+    closes = [];
+    appts = {'9am':'','1pm':'','5pm':''};
+    settings = {mapsKey:'',outlookUrl:''};
+    renderMonth();
+    renderBriefing();
+    toast('Cleared.');
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${name}`).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const map = {briefing:'nav-leads', month:'nav-month', settings:'nav-settings'};
+  if (map[name]) document.getElementById(map[name])?.classList.add('active');
+  document.getElementById('bottom-nav').style.display = name === 'lead' ? 'none' : 'flex';
+  window.scrollTo(0,0);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function hideLoading() {
+  document.getElementById('loading').style.display = 'none';
+  showScreen('briefing');
+}
+
+// ─────────────────────────────────────────────────────────
+// TOAST + CONFETTI
+// ─────────────────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function launchConfetti() {
+  const colors = ['#C0481A','#1B7A4A','#1B4F8A','#F4C542','#E84393','#FFFFFF'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'conf';
+      el.style.cssText = `left:${Math.random()*100}vw;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*0.4}s;border-radius:${Math.random()>.5?'50%':'2px'}`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }, i * 25);
+  }
+}
+
+// ─────────────────────────────────────────────────────────
+// CSV PARSER
+// ─────────────────────────────────────────────────────────
+function parseCSV(csv) {
+  const lines = csv.split('\n').filter(l => l.trim());
+  if (lines.length < 2) return demoLeads();
+  const headers = parseCSVLine(lines[0]);
+  const result = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = parseCSVLine(lines[i]);
+    const row = {};
+    headers.forEach((h, idx) => {
+      const key = h.replace(/"/g,'').trim().toLowerCase().replace(/[^a-z0-9]/g,'_');
+      row[key] = (vals[idx] || '').replace(/^"|"$/g,'').trim();
+    });
+    const score = parseInt(row['_score'] || row['score'] || '0');
+    if (!score) continue;
+    result.push({
+      score,
+      address: row['address'] || '',
+      city: row['city'] || '',
+      zip: row['zip'] || '',
+      trigger: row['trigger'] || '',
+      homeValue: row['home_value'] || '',
+      equity: row['equity_est_'] || '',
+      ownerName: row['owner_name'] || '',
+      phone: row['phone'] || '',
+      triggerDetail: row['trigger_detail'] || '',
+      rationale: row['score_rationale'] || '',
+      doorHanger: row['_door_hanger'] || row['door_hanger'] || '',
+      voicemail: row['_voicemail'] || row['voicemail'] || '',
+      text: row['_text'] || row['text'] || '',
+      emailSubject: row['_email_subject'] || row['email_subject'] || '',
+      emailBody: row['_email_body'] || row['email_body'] || '',
+      dateFound: row['date_found'] || '',
+      leadId: row['lead_id'] || `l${Math.random().toString(36).substr(2,8)}`,
+    });
+  }
+  return result.length ? result : demoLeads();
+}
+
+function parseCSVLine(line) {
+  const result = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+    else if (line[i] === ',' && !inQ) { result.push(cur); cur = ''; }
+    else cur += line[i];
+  }
+  result.push(cur);
+  return result;
+}
+
+function demoLeads() {
+  return [
+    { score:5, address:'31 GATESIDE PL SE', city:'MARIETTA', zip:'30067', trigger:'T1', homeValue:'$1,530,000', equity:'$382,500', ownerName:'', phone:'', triggerDetail:'Purchased 2026-02-23 for $1,530,000. Built 1994 — deck est. 32+ yrs old', rationale:'Excellent lead — $1.5M home with a 32-year-old original wood deck. Free deck inspection is the perfect door opener. High equity, Marietta is prime territory.', doorHanger:"Hi neighbors! We're Outback Deck — we noticed your home was built in 1994, which means that deck might be due for some love. We offer free deck inspections with no pressure. — Gaby", voicemail:"Hey, this is Gaby with Outback Deck in Woodstock. I work in your neighborhood a lot and noticed your home was built in the '90s — which usually means the original deck is starting to show its age. I offer free deck inspections, completely no pressure, just want to show you what's possible. Give me a shout when you get a chance!", text:"Hey! Gaby from Outback Deck. We do free deck inspections in your area — homes from the 90s usually have decks ready for an upgrade. Worth a quick look? No pressure at all 🙂", emailSubject:'Free deck inspection — Gateside Pl', emailBody:"Hi! I'm Gaby with Outback Deck. I work in your area and noticed your home has some years on it — which often means the original deck is due for attention. I offer free no-pressure inspections and would love to take a look.", dateFound:'2026-04-07', leadId:'demo1' },
+    { score:5, address:'311 ROLLING ROCK RD SE', city:'MARIETTA', zip:'30067', trigger:'T1', homeValue:'$2,750,000', equity:'$687,500', ownerName:'', phone:'', triggerDetail:'Purchased 2026-10-30 for $2,750,000. Built 1995 — deck est. 31+ yrs old', rationale:'Exceptional $2.75M home with 31-year old deck. Pool visible — pool + aging deck is a safety pain point and premium outdoor living opportunity.', doorHanger:"Welcome to Rolling Rock! We build premium TimberTech AZEK decks for homeowners in Marietta. With a pool like yours, the right deck transforms the whole outdoor space. We offer free design consultations. — Gaby, Outback Deck", voicemail:"Hey there, Gaby with Outback Deck here. I've been doing some work in your neighborhood and wanted to reach out — you've got an incredible property on Rolling Rock. I specialize in TimberTech composite decks for homes with pools, and I'd love to show you what a deck renovation could do for your outdoor space. Completely free consultation. Give me a call when you get a chance!", text:"Hey! Gaby w/ Outback Deck. Love your place on Rolling Rock — pool + the right deck = incredible outdoor space. I do free design consults. Worth a chat? 🏊", emailSubject:'Your Rolling Rock outdoor space has real potential', emailBody:"Congratulations on your beautiful home on Rolling Rock! I'm Gaby with Outback Deck, and I specialize in TimberTech AZEK composite decks for premium homes in Marietta. With your pool, the right deck could truly transform your outdoor living space. I'd love to offer a free consultation.", dateFound:'2026-04-07', leadId:'demo2' },
+    { score:4, address:'2786 LONG GROVE DR', city:'MARIETTA', zip:'30062', trigger:'T1', homeValue:'$1,440,000', equity:'$360,000', ownerName:'', phone:'', triggerDetail:'Purchased 2026-01-30 for $1,440,000. Built 1999 — deck est. 27+ yrs old', rationale:'Strong lead — $1.44M home with 27-year old deck in Marietta. New homeowner in improvement mode.', doorHanger:"Welcome to Long Grove! We just finished a beautiful TimberTech deck nearby and noticed your home has some history — which usually means the deck is ready for an upgrade. No obligation, just ideas. — Gaby", voicemail:"Hey, this is Gaby from Outback Deck in Woodstock. Wanted to welcome you to Long Grove Drive — great neighborhood! We do TimberTech composite decks, and I noticed your home was built in '99. If that deck has seen better days, I'd love to swing by and offer a free inspection. No pressure. Give me a ring!", text:"Hey! Gaby from Outback Deck. Congrats on Long Grove Dr! If that 27yr old deck needs attention, we do free inspections. TimberTech composite — never stains, never rots. Worth a chat?", emailSubject:'Welcome to Long Grove — quick note on your deck', emailBody:"Congrats on your new home on Long Grove Drive! I'm Gaby with Outback Deck. With a 1999 build, I wanted to reach out about your deck — we specialize in TimberTech AZEK composite that won't splinter, rot, or need staining. Happy to offer a free inspection whenever works for you.", dateFound:'2026-04-07', leadId:'demo3' },
+  ];
+}
+
+// Close modals on backdrop tap
+document.querySelectorAll('.modal-bg').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
