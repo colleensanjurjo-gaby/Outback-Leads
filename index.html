@@ -384,6 +384,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="goal-card"><div class="goal-tag">🎯 GREAT MONTH</div><div class="goal-amount great">$300,000</div><div class="goal-note">Killing it</div></div>
     <div class="goal-card"><div class="goal-tag">🚀 AHEAD OF PACE</div><div class="goal-amount ahead">$400,000</div><div class="goal-note">Top performer</div></div>
   </div>
+  <div style="padding:0 14px">
+    <button onclick="openManualClose()" style="width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:800;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+      🏆 Log a Close
+    </button>
+  </div>
   <div class="closes-section">
     <div class="section-head" style="padding:16px 0 10px">ALL CLOSES THIS MONTH</div>
     <div id="closes-list"></div>
@@ -478,6 +483,31 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
     <button class="modal-confirm" onclick="confirmAppt()">✅ Appointment Confirmed</button>
     <button class="modal-cancel" onclick="closeModal('modal-set-appt')">Cancel</button>
+  </div>
+</div>
+
+<!-- Manual Close Modal -->
+<div class="modal-bg" id="modal-manual-close">
+  <div class="modal-sheet" style="text-align:center">
+    <div class="modal-handle"></div>
+    <div style="font-size:48px;margin-bottom:4px">🏆</div>
+    <div class="modal-title">Log a Close</div>
+    <div style="text-align:left">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Address</div>
+      <input class="appt-input" id="manual-address" placeholder="e.g. 3802 Lake Edge Dr, Suwanee">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">ZIP Code</div>
+      <input class="appt-input" id="manual-zip" placeholder="e.g. 30024" inputmode="numeric">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Deal Amount</div>
+      <input class="deal-input" id="manual-amount" type="number" inputmode="numeric" placeholder="$0" style="text-align:left;padding:12px 14px;font-size:22px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Source</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <button class="source-btn" id="src-outback" onclick="setSource('outback')" style="flex:1;padding:10px;border-radius:var(--rsm);border:1.5px solid var(--blue);background:var(--blue-bg);color:var(--blue);font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">Outback Lead</button>
+        <button class="source-btn" id="src-selfgen" onclick="setSource('selfgen')" style="flex:1;padding:10px;border-radius:var(--rsm);border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer">Self-Gen</button>
+      </div>
+    </div>
+    <div class="rescission-box">⏱ 3-day rescission — Colleen sends thank you card on <strong id="manual-rescission-date"></strong></div>
+    <button class="modal-confirm" style="background:var(--green)" onclick="confirmManualClose()">🏆 Log This Close</button>
+    <button class="modal-cancel" onclick="closeModal('modal-manual-close')">Cancel</button>
   </div>
 </div>
 
@@ -900,8 +930,83 @@ function confirmClose() {
 }
 
 // ─────────────────────────────────────────────────────────
-// OUTCOME LOG
+// MANUAL CLOSE
 // ─────────────────────────────────────────────────────────
+let manualSource = 'outback';
+
+function setSource(src) {
+  manualSource = src;
+  document.getElementById('src-outback').style.cssText = src === 'outback'
+    ? 'flex:1;padding:10px;border-radius:var(--rsm);border:1.5px solid var(--blue);background:var(--blue);color:#fff;font-size:13px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer'
+    : 'flex:1;padding:10px;border-radius:var(--rsm);border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer';
+  document.getElementById('src-selfgen').style.cssText = src === 'selfgen'
+    ? 'flex:1;padding:10px;border-radius:var(--rsm);border:1.5px solid var(--green);background:var(--green);color:#fff;font-size:13px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer'
+    : 'flex:1;padding:10px;border-radius:var(--rsm);border:1.5px solid var(--border);background:var(--surface);color:var(--text2);font-size:13px;font-weight:700;font-family:DM Sans,sans-serif;cursor:pointer';
+}
+
+function openManualClose() {
+  manualSource = 'outback';
+  setSource('outback');
+  document.getElementById('manual-address').value = '';
+  document.getElementById('manual-zip').value = '';
+  document.getElementById('manual-amount').value = '';
+  const d = new Date(); d.setDate(d.getDate() + 3);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('manual-rescission-date').textContent = `${months[d.getMonth()]} ${d.getDate()}`;
+  document.getElementById('modal-manual-close').classList.add('open');
+}
+
+function confirmManualClose() {
+  const address = document.getElementById('manual-address').value.trim();
+  const zip = document.getElementById('manual-zip').value.trim();
+  const amount = parseInt(document.getElementById('manual-amount').value) || 0;
+  if (!address) { toast('Enter the address'); return; }
+  if (!amount) { toast('Enter the deal amount'); return; }
+
+  const d = new Date();
+  const resc = new Date(d); resc.setDate(d.getDate() + 3);
+
+  const close = {
+    id: Date.now(),
+    address,
+    zip,
+    amount,
+    source: manualSource,
+    date: d.toISOString(),
+    rescDate: resc.toISOString(),
+    cleared: false,
+    leadId: null,
+  };
+  closes.push(close);
+  localStorage.setItem('gaby_closes', JSON.stringify(closes));
+
+  // Save to training data for engine feedback loop
+  saveTrainingSignal(close, 'closed');
+
+  closeModal('modal-manual-close');
+  launchConfetti();
+  setTimeout(() => {
+    renderMonth();
+    toast(`🏆 $${amount.toLocaleString()} logged!`);
+  }, 1200);
+}
+
+function saveTrainingSignal(close, outcome) {
+  // Saves win/loss patterns for engine feedback loop
+  // Engine reads this on next run to weight similar leads higher
+  const signals = JSON.parse(localStorage.getItem('training_signals') || '[]');
+  signals.push({
+    address: close.address,
+    zip: close.zip || '',
+    amount: close.amount,
+    source: close.source || 'unknown',
+    outcome,
+    date: new Date().toISOString(),
+  });
+  localStorage.setItem('training_signals', JSON.stringify(signals));
+}
+
+
 function logOut(type) {
   const msgs = { no_answer:'📵 No answer logged', follow_up:'📅 Follow-up noted' };
   toast(msgs[type] || 'Logged');
