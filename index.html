@@ -497,6 +497,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <input class="appt-input" id="manual-address" placeholder="e.g. 3802 Lake Edge Dr, Suwanee">
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">ZIP Code</div>
       <input class="appt-input" id="manual-zip" placeholder="e.g. 30024" inputmode="numeric">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Close Date</div>
+      <input class="appt-input" id="manual-close-date" type="date" style="margin-bottom:10px" onchange="updateManualRescDate()">
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Deal Amount</div>
       <input class="deal-input" id="manual-amount" type="number" inputmode="numeric" placeholder="$0" style="text-align:left;padding:12px 14px;font-size:22px">
       <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Source</div>
@@ -950,20 +952,30 @@ function openManualClose() {
   document.getElementById('manual-address').value = '';
   document.getElementById('manual-zip').value = '';
   document.getElementById('manual-amount').value = '';
-  const d = new Date(); d.setDate(d.getDate() + 3);
+  // Default to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('manual-close-date').value = today;
+  updateManualRescDate();
+  document.getElementById('modal-manual-close').classList.add('open');
+}
+
+function updateManualRescDate() {
+  const dateVal = document.getElementById('manual-close-date').value;
+  const d = dateVal ? new Date(dateVal + 'T12:00:00') : new Date();
+  d.setDate(d.getDate() + 3);
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   document.getElementById('manual-rescission-date').textContent = `${months[d.getMonth()]} ${d.getDate()}`;
-  document.getElementById('modal-manual-close').classList.add('open');
 }
 
 function confirmManualClose() {
   const address = document.getElementById('manual-address').value.trim();
   const zip = document.getElementById('manual-zip').value.trim();
   const amount = parseInt(document.getElementById('manual-amount').value) || 0;
+  const dateVal = document.getElementById('manual-close-date').value;
   if (!address) { toast('Enter the address'); return; }
   if (!amount) { toast('Enter the deal amount'); return; }
 
-  const d = new Date();
+  const d = dateVal ? new Date(dateVal + 'T12:00:00') : new Date();
   const resc = new Date(d); resc.setDate(d.getDate() + 3);
 
   const close = {
