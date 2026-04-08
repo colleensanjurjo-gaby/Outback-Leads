@@ -539,10 +539,64 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 // ─────────────────────────────────────────────────────────
 const SHEET_ID = '16H47CxYhdE1zLmlx2WfWBN91z4Lwr0C_XLLPZwzDsZ8';
 const SHEET_TAB = '🏠 Hot Leads';
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwijp9MDY5V5zRGTGV4jAqF1Xoc18o2-b1YXGPdTP4-s7Qn_rD2IsXvlfwTPL6By0ow/exec';
 const DEFAULT_LEADS_SHOWN = 3;
 const APRIL_GREAT = 300000;
 const APRIL_AHEAD = 400000;
 const COLLEEN_EMAIL = 'colleen.sanjurjo@gmail.com';
+
+// ─────────────────────────────────────────────────────────
+// SHEET SYNC — writes back to Google Sheet via Apps Script
+// ─────────────────────────────────────────────────────────
+async function sheetPost(data) {
+  try {
+    // Apps Script requires no-cors mode for anonymous web apps
+    await fetch(WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data),
+    });
+    return true;
+  } catch(e) {
+    console.warn('Sheet sync failed (offline?):', e);
+    return false;
+  }
+}
+
+async function syncAppointmentsToSheet(appts) {
+  await sheetPost({
+    action: 'save_appointments',
+    appt_9am: appts['9am'] || '',
+    appt_1pm: appts['1pm'] || '',
+    appt_5pm: appts['5pm'] || '',
+  });
+}
+
+async function syncOutcomeToSheet(lead, outcome, notes='') {
+  await sheetPost({
+    action: 'log_outcome',
+    leadId: lead?.leadId || '',
+    address: lead?.address || '',
+    contactMethod: 'App',
+    outcome,
+    notes,
+    nextStep: outcome === 'follow_up' ? 'Follow up next week' : '',
+    appointmentSet: outcome === 'appt_set' ? 'YES' : 'NO',
+  });
+}
+
+async function syncCloseToSheet(close) {
+  await sheetPost({
+    action: 'log_close',
+    leadId: close.leadId || '',
+    address: close.address,
+    amount: close.amount,
+    source: close.source || 'unknown',
+    closeDate: new Date(close.date).toLocaleDateString(),
+    rescDate: new Date(close.rescDate).toLocaleDateString(),
+  });
+}
 
 // ─────────────────────────────────────────────────────────
 // STATE
@@ -841,6 +895,7 @@ function saveAppointments() {
   appts['1pm'] = document.getElementById('appt-1pm').value.trim();
   appts['5pm'] = document.getElementById('appt-5pm').value.trim();
   localStorage.setItem('gaby_appts', JSON.stringify(appts));
+  syncAppointmentsToSheet(appts); // writes to sheet
   closeModal('modal-appt-entry');
   enrichLeadsWithDistance();
   renderBriefing();
@@ -889,7 +944,11 @@ function updateApptMsgs() {
 
 function copyTeams() { navigator.clipboard?.writeText(document.getElementById('teams-msg').textContent).then(() => toast('Copied for Teams!')); }
 function copyConfirm() { navigator.clipboard?.writeText(document.getElementById('confirm-msg').textContent).then(() => toast('Copied!')); }
-function confirmAppt() { closeModal('modal-set-appt'); toast('✅ Appointment set!'); }
+function confirmAppt() {
+  closeModal('modal-set-appt');
+  syncOutcomeToSheet(currentLead, 'appt_set', `Time: ${pickedTime || 'TBD'}`);
+  toast('✅ Appointment set!');
+}
 
 // ─────────────────────────────────────────────────────────
 // CLOSED MODAL
@@ -921,6 +980,8 @@ function confirmClose() {
     leadId: currentLead?.leadId,
   });
   localStorage.setItem('gaby_closes', JSON.stringify(closes));
+  syncCloseToSheet(closes[closes.length-1]);
+  saveTrainingSignal(closes[closes.length-1], 'closed');
 
   closeModal('modal-closed');
   launchConfetti();
@@ -991,8 +1052,7 @@ function confirmManualClose() {
   };
   closes.push(close);
   localStorage.setItem('gaby_closes', JSON.stringify(closes));
-
-  // Save to training data for engine feedback loop
+  syncCloseToSheet(close);
   saveTrainingSignal(close, 'closed');
 
   closeModal('modal-manual-close');
@@ -1021,6 +1081,7 @@ function saveTrainingSignal(close, outcome) {
 
 function logOut(type) {
   const msgs = { no_answer:'📵 No answer logged', follow_up:'📅 Follow-up noted' };
+  syncOutcomeToSheet(currentLead, type); // writes to sheet
   toast(msgs[type] || 'Logged');
 }
 
